@@ -31,7 +31,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
     
   num_particles = NUM_PARTICALS;
 
-  // Little optimization since we know the size in advance.
+  // Reserve the size.
   particles.reserve(num_particles);
   weights.reserve(num_particles);
 
@@ -39,7 +39,8 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
   normal_distribution<double> dist_x(x, std[0]);
   normal_distribution<double> dist_y(y, std[1]);
   normal_distribution<double> dist_theta(theta, std[2]);
-
+  
+  // Initialize all the particles
   for (int i = 0; i < num_particles; ++i) {
         Particle p;
         p.id = i;
@@ -64,7 +65,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
     
     for (int i = 0; i < num_particles; i++) {
         
-        // calculate new state
+        // calculate new state and as usual avoid 0 yaw_rate
         if (fabs(yaw_rate) < 0.00001) {
             particles[i].x += velocity * delta_t * cos(particles[i].theta);
             particles[i].y += velocity * delta_t * sin(particles[i].theta);
@@ -89,7 +90,7 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
  
  for (unsigned int i = 0; i < observations.size(); i++) {
         
-        // grab current observation
+        // get the current observation
         LandmarkObs o = observations[i];
         
         // init minimum distance to maximum possible
@@ -126,7 +127,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   3.33
 	//   http://planning.cs.uiuc.edu/node99.html
     
-    // for each particle...
+    // Perform for each particle
     for (int i = 0; i < num_particles; i++) {
         
         // get the particle x, y coordinates
@@ -137,7 +138,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
         // Vector to hold the map landmark locations predicted to be within sensor range of the particle
         vector<LandmarkObs> predictions;
         
-        // for each map landmark...
+        // perform for each map landmark...
         for (unsigned int j = 0; j < map_landmarks.landmark_list.size(); j++) {
             
             // get id and x,y coordinates
